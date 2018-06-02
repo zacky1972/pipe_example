@@ -1,11 +1,13 @@
 extern crate libc;
 
 use libc::{c_void, size_t, pipe, fork, close, write, read};
+use std::ffi::CString;
 
 
 fn main() {
 	let mut pp = [0; 2];
 	let mut qq = [0; 2];
+	let message = "Hello";
 
 	unsafe {
 		pipe(pp.as_mut_ptr());
@@ -30,9 +32,9 @@ fn main() {
 				close(pp[0]);
 				close(qq[1]);
 
-				let src_data: [u8; 10] = [1; 10];
-				let src_buf = src_data.as_ptr() as *const c_void;
-				write(pp[1], src_buf, (src_data.len()) as size_t);
+				let src_data =  CString::new(message).unwrap().as_ptr();
+				let src_buf = src_data as *const c_void;
+				write(pp[1], src_buf, (message.len() + 1) as size_t);
 
 				let mut dst_data: [u8; 256] = [0; 256];
 				let mut dst_buf = dst_data.as_mut_ptr() as *mut c_void;
